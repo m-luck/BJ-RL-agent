@@ -36,8 +36,8 @@ def sumOver_f_J_notB(B: int, f: Dict):
     This is sum of all f_J where J is not B, otherwise known as g.
     '''
     total = 0
-    for J, f_J in enumerate(f):
-        if J != B: total += f_J 
+    for J in f:
+        if J != B: total += f[J] 
     return total
 
 def sumSeenInTrajectory(S: List, K: int, wc: Dict, lc: Dict):
@@ -93,10 +93,11 @@ def stoch(K, B, probB, T, f, M, g):
             cdf.append(val)
         sanity += add
     if sanity < 0.97 or sanity - 0.03 > 0.98: print("Total is weird.",sanity) 
-    x = random.randint(0,999) / 1000 # Uniformly distributed between 0 and 1. 
+    x = random.randint(0,1000) / 1000 # Uniformly distributed between 0 and 1. 
     for i in range(0,K+1):
-        if x < cdf[i]: 
+        if x <= cdf[i]: 
             return i
+    return K
 
 def populateTerms(settings, S, winCount, loseCount):
     N, L, U, K, M, NGAMES = settings
@@ -108,8 +109,7 @@ def populateTerms(settings, S, winCount, loseCount):
     return (N, L, U, K, M, X, Y, D, f, B, g, T)
 
 def draw_card(N): 
-    card_drawn = random.randint(1,N+1)
-    print(card_drawn)
+    card_drawn = random.randint(1,N)
     return card_drawn
 
 def take_turn(X, Y, D, N, T, f, B, M, K, g): 
@@ -118,10 +118,11 @@ def take_turn(X, Y, D, N, T, f, B, M, K, g):
     '''
     probB = pB(T, f, B, M, K)
     outcome = stoch(K, B, probB, T, f, M, g)
-    add = 0
+    total = 0
     for draw in range(0, outcome):
-        add += draw_card(N)
-    new_state = (X + add, Y, outcome) 
+        d = draw_card(N)
+        total += d
+    new_state = (X + total, Y, outcome) 
     return new_state
 
 def update(winnerMoves, loserMoves, wc, lc):
@@ -138,25 +139,25 @@ def run_trial(wc, lc, policy, settings):
     trajectory = [[],[]]
     assert len(settings) == 6
     K = settings[3]
-    S = (0, 0, random.randint(0,K+1)) # Random initial draw state, should approximate away
+    S = (0, 0, random.randint(1,K+1)) # Random initial draw state, should approximate away
     X, Y, D = S
-    N, L, U, K, M, X, Y, D, f, B, g, T = populateTerms(settings, S, wc, lc)
-    policy[str((X, Y, D))] = B
     endgame = False
     player = 0
     while endgame == False:  
         X0, Y0, D0 = X, Y, D
-        print(X, Y, D)
-        X, Y, D = take_turn(N, X, Y, D, T, f, B, M, K, g)
+        f = genf_j((X, Y, D),K,wc,lc)
+        B = getMaxf_J(K, f)
+        T = sumSeenInTrajectory((X,Y,D),K,wc,lc)
+        g = sumOver_f_J_notB(B, f)
+        policy[str((X, Y, D))] = B
+        X, Y, D = take_turn(X, Y, D, N, T, f, B, M, K, g)
         if player == 0: trajectory[0].append([(X0,Y0,D0,D)])
         else: trajectory[1].append((X0,Y0,D0,D))
-        if Y >= L and Y <= U: 
+        if X >= L and X <= U: 
             endgame = True 
             wc, lc = update(trajectory[player],trajectory[other(player)], wc, lc)
-        f = genf_j((Y, X, D), K, wc, lc)
-        B = getMaxf_J(K, f)
-        policy[str((Y, X, D))] = B
         player = other(player)
+        X, Y = Y, X
     return policy, wc, lc
 
 def run(N,L,U,K,M,NGAMES):
@@ -175,5 +176,6 @@ K = int(sys.argv[4])
 M = float(sys.argv[5])
 NGAMES = int(sys.argv[6])
 policy, wc, lc = run(N,L,U,K,M,NGAMES)
-print(policy, wc, lc)
-v.printPolicyGrid(policy,K,L)
+print(policy)
+v.printPolicyGrid(policy,K,L, True)
+v.printProbabilityGrid(policy, wc, lc,L, True)
