@@ -138,6 +138,8 @@ def other(player):
 def run_trial(wc, lc, policy, settings):
     trajectory = [[],[]]
     assert len(settings) == 6
+    L = settings[1]
+    U = settings[2]
     K = settings[3]
     S = (0, 0, random.randint(1,K+1)) # Random initial draw state, should approximate away
     X, Y, D = S
@@ -156,6 +158,9 @@ def run_trial(wc, lc, policy, settings):
         if X >= L and X <= U: 
             endgame = True 
             wc, lc = update(trajectory[player],trajectory[other(player)], wc, lc)
+        elif X > U:
+            endgame = True 
+            wc, lc = update(trajectory[other(player)],trajectory[player], wc, lc)
         player = other(player)
         X, Y = Y, X
     return policy, wc, lc
@@ -166,9 +171,13 @@ def run(N,L,U,K,M,NGAMES):
     lc = {}
     settings = N,L,U,K,M,NGAMES
     for n in range(0, NGAMES):
+        print(n)
         policy, wc, lc = run_trial(wc, lc, policy, settings)
-    return policy, wc, lc
-
+    print("Done!")
+    return policy, wc, lc            if Y == 0: 
+                state_str = str((X, Y, 0))
+            if Y == 0: 
+                state_str = str((X, Y, 0))
 N = int(sys.argv[1]) 
 L = int(sys.argv[2])
 U = int(sys.argv[3])
@@ -176,6 +185,7 @@ K = int(sys.argv[4])
 M = float(sys.argv[5])
 NGAMES = int(sys.argv[6])
 policy, wc, lc = run(N,L,U,K,M,NGAMES)
-print(policy)
+# for key in policy:
+#     print(key, policy[key])
 v.printPolicyGrid(policy,K,L, True)
 v.printProbabilityGrid(policy, wc, lc,L, True)
