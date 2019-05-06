@@ -26,7 +26,7 @@ def getMaxf_J(K: int, f: Dict):
     valB = 0
     B = 0
     for J in range(0,K+1):
-        if f[J] > valB:
+        if f[J] >= valB:
             B = J
             valB = f[J]
     return B
@@ -95,6 +95,7 @@ def stoch(K, B, probB, T, f, M, g):
     if sanity < 0.97 or sanity - 0.03 > 0.98: print("Total is weird.",sanity) 
     x = random.randint(0,1000) / 1000 # Uniformly distributed between 0 and 1. 
     for i in range(0,K+1):
+        print(x,'vs', cdf[i])
         if x <= cdf[i]: 
             return i
     return K
@@ -171,13 +172,10 @@ def run(N,L,U,K,M,NGAMES):
     lc = {}
     settings = N,L,U,K,M,NGAMES
     for n in range(0, NGAMES):
-        print(n)
+        if n % 1000 == 0: print(n)
         policy, wc, lc = run_trial(wc, lc, policy, settings)
     print("Done!")
-    return policy, wc, lc            if Y == 0: 
-                state_str = str((X, Y, 0))
-            if Y == 0: 
-                state_str = str((X, Y, 0))
+    return policy, wc, lc
 N = int(sys.argv[1]) 
 L = int(sys.argv[2])
 U = int(sys.argv[3])
@@ -185,7 +183,5 @@ K = int(sys.argv[4])
 M = float(sys.argv[5])
 NGAMES = int(sys.argv[6])
 policy, wc, lc = run(N,L,U,K,M,NGAMES)
-# for key in policy:
-#     print(key, policy[key])
 v.printPolicyGrid(policy,K,L, True)
 v.printProbabilityGrid(policy, wc, lc,L, True)

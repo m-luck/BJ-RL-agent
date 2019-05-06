@@ -1,7 +1,7 @@
 from typing import Dict
 def printPolicyGrid(policy: Dict,K,L,axes):
     '''
-    Prints the grid as specified. Also has a more detailed default option. Use --concise for simple grid.
+    Prints the policy grid as specified.
     '''
     full = ""
     if axes:
@@ -24,7 +24,7 @@ def printPolicyGrid(policy: Dict,K,L,axes):
 
 def printProbabilityGrid(policy, wc, lc, L, axes):
     '''
-    Prints the grid as specified. Also has a more detailed default option. Use --concise for simple grid.
+    Prints the Probability grid as specified. 
     '''
     full = ""
     if axes:
