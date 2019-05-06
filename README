@@ -1,0 +1,9 @@
+To run:
+
+python3 sub_learner <NCARDS> <L> <U> <K> <M> <NGAMES>
+
+For unattainable and arbitrary cases, 0.000 or 1.000 show up. (Not all 1.000 are arbitrary and unattainable though). For unlikely cases, like when you have 0 cards and your opponent has many turns worth of cards, i.e. on the far edges of the grid, these numbers will vary, since they are so unlikely given a proper early policy. Generally, the policies match the test output, (https://cs.nyu.edu/courses/spring19/CSCI-GA.2560-001/prog4Results.txt) and the original 1 card tests (https://cs.nyu.edu/courses/spring19/CSCI-GA.2560-001/BlackjackOut1.txt); and the far probabilities vary as mentioned above, dependent on the RNG. 
+
+Thanks!
+
+Any questions can be emailed to mll469@nyu.edu 

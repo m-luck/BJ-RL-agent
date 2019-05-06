@@ -26,7 +26,7 @@ def getMaxf_J(K: int, f: Dict):
     valB = 0
     B = 0
     for J in range(0,K+1):
-        if f[J] >= valB:
+        if f[J] >= valB: # Decided to make it >= instead of to make it more exploratory.
             B = J
             valB = f[J]
     return B
@@ -60,6 +60,8 @@ def pB(T, f, B, M, K):
     S: state (X, Y, D)
     f: Win Ratio 
     M: explore-exploit hyperparameter
+    B: index of 'optimal' move
+    K: # cards that can be drawn
     '''
     numer = T*f[B] + M
     denom = T*f[B] + (K + 1) * M
@@ -93,9 +95,8 @@ def stoch(K, B, probB, T, f, M, g):
             cdf.append(val)
         sanity += add
     if sanity < 0.97 or sanity - 0.03 > 0.98: print("Total is weird.",sanity) 
-    x = random.randint(0,1000) / 1000 # Uniformly distributed between 0 and 1. 
+    x = random.randint(0,999) / 1000 # Uniformly distributed between 0 and 1. 
     for i in range(0,K+1):
-        print(x,'vs', cdf[i])
         if x <= cdf[i]: 
             return i
     return K
@@ -123,8 +124,9 @@ def take_turn(X, Y, D, N, T, f, B, M, K, g):
     for draw in range(0, outcome):
         d = draw_card(N)
         total += d
-    new_state = (X + total, Y, outcome) 
-    return new_state
+    new_state = (X + total, Y, outcome)
+    if_pass = True if outcome == 0 else False
+    return new_state, if_pass
 
 def update(winnerMoves, loserMoves, wc, lc):
     for move in winnerMoves:
@@ -153,10 +155,16 @@ def run_trial(wc, lc, policy, settings):
         T = sumSeenInTrajectory((X,Y,D),K,wc,lc)
         g = sumOver_f_J_notB(B, f)
         policy[str((X, Y, D))] = B
-        X, Y, D = take_turn(X, Y, D, N, T, f, B, M, K, g)
+        (X, Y, D), if_pass = take_turn(X, Y, D, N, T, f, B, M, K, g)
         if player == 0: trajectory[0].append([(X0,Y0,D0,D)])
         else: trajectory[1].append((X0,Y0,D0,D))
-        if X >= L and X <= U: 
+        if if_pass and D0 == 0: # Both players have passed, Y being the first one.
+            endgame = True 
+            if X > Y and X <= U:
+                wc, lc = update(trajectory[player],trajectory[other(player)], wc, lc)
+            else: 
+                wc, lc = update(trajectory[other(player)],trajectory[player], wc, lc)
+        elif X >= L and X <= U: 
             endgame = True 
             wc, lc = update(trajectory[player],trajectory[other(player)], wc, lc)
         elif X > U:
@@ -172,7 +180,7 @@ def run(N,L,U,K,M,NGAMES):
     lc = {}
     settings = N,L,U,K,M,NGAMES
     for n in range(0, NGAMES):
-        if n % 1000 == 0: print(n)
+        if n % 1000 == 0: print("Working... Trial",n)
         policy, wc, lc = run_trial(wc, lc, policy, settings)
     print("Done!")
     return policy, wc, lc
@@ -183,5 +191,7 @@ K = int(sys.argv[4])
 M = float(sys.argv[5])
 NGAMES = int(sys.argv[6])
 policy, wc, lc = run(N,L,U,K,M,NGAMES)
+print('\nInput:',N, L, U, K, M,'\n')
 v.printPolicyGrid(policy,K,L, True)
+print('\n')
 v.printProbabilityGrid(policy, wc, lc,L, True)

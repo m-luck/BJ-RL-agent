@@ -36,7 +36,8 @@ def printProbabilityGrid(policy, wc, lc, L, axes):
         if axes: row += str(X) + " "
         for Y in range(0,L):
             state = (X, Y, 1)
-            if Y == 0: 
+            if Y == 0:
+                # if X == 0: 
                 state = (X, Y, 0)
             state_str = str(state)
             optimal_move = policy.get(state_str, 0)
@@ -45,6 +46,8 @@ def printProbabilityGrid(policy, wc, lc, L, axes):
             l = lc.get(move_tuple, 0)
             denom = w + l if w + l != 0 else 0.5
             prob = "{0:.4f}".format(w / denom)
+            # if Y == 0 and X > 0:
+            #     prob =  "{0:.4f}".format(0.5)
             row += " " + str(prob)
         full += "\n" + row  
     print(full)
