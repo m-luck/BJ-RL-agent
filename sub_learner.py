@@ -15,8 +15,7 @@ def genf_j(S: Tuple, K: int, winCount: Dict, loseCount: Dict):
         wc = 0 if wc == None else wc # If the entry doesn't exist, consider it 0
         lc = 0 if lc == None else lc
         denom = wc + lc
-        denom = denom if denom != 0 else 0.5
-        f[J] = wc/denom
+        f[J] = wc/denom if denom != 0 else 0.5
     return f
 
 def getMaxf_J(K: int, f: Dict):
@@ -51,7 +50,7 @@ def sumSeenInTrajectory(S: List, K: int, wc: Dict, lc: Dict):
         lc_S = lc.get(str((X,Y,D,J)))
         wc_S = 0 if wc_S == None else wc_S
         lc_S = 0 if lc_S == None else wc_S
-        total = wc_S + lc_S
+        total += wc_S + lc_S
     return total
 
 def pB(T, f, B, M, K):
@@ -125,7 +124,8 @@ def take_turn(X, Y, D, N, T, f, B, M, K, g):
         d = draw_card(N)
         total += d
     new_state = (X + total, Y, outcome)
-    if_pass = True if outcome == 0 else False
+    # if_pass = True if B == 0 else False
+    if_pass = True if total == 0 else False
     return new_state, if_pass
 
 def update(winnerMoves, loserMoves, wc, lc):
@@ -141,10 +141,11 @@ def other(player):
 def run_trial(wc, lc, policy, settings):
     trajectory = [[],[]]
     assert len(settings) == 6
+    N = settings[0]
     L = settings[1]
     U = settings[2]
     K = settings[3]
-    S = (0, 0, random.randint(1,K+1)) # Random initial draw state, should approximate away
+    S =(0, 0, 1) # Random initial draw state, should approximate away
     X, Y, D = S
     endgame = False
     player = 0
